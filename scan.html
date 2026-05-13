@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YISS 2026 — Internship Scanner</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root { --navy:#003876; --dark:#1A1A2E; --gold:#C8A951; --green:#22A065; --red:#D94040; --orange:#E8852E; --text:#1A1A2E; --text2:#5A5A7A; --font:'DM Sans','Noto Sans KR',sans-serif; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:var(--font); min-height:100vh; background:var(--dark); }
+  .bg { position:fixed; inset:0; z-index:0; background:linear-gradient(170deg,#0D0D1A,var(--dark),#2A2A45); }
+  .main { position:relative; z-index:10; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+  .card { background:#fff; border-radius:24px; box-shadow:0 20px 60px rgba(0,0,0,0.3); width:100%; max-width:420px; overflow:hidden; }
+  .gate-header { background:linear-gradient(135deg,var(--dark),#2D2D4E); padding:28px 24px 22px; text-align:center; }
+  .gate-badge { display:inline-block; background:rgba(200,169,81,0.15); color:var(--gold); font-size:11px; font-weight:700; padding:4px 14px; border-radius:20px; border:1px solid rgba(200,169,81,0.3); margin-bottom:10px; }
+  .gate-title { font-size:18px; font-weight:700; color:#fff; margin-bottom:3px; }
+  .gate-sub { font-size:11px; color:rgba(255,255,255,0.4); }
+  .gate-body { padding:24px; }
+  .gate-input { width:100%; padding:13px; border:2px solid #E2E6F0; border-radius:12px; font-size:16px; font-family:var(--font); text-align:center; letter-spacing:6px; color:var(--text); background:#FAFAFF; }
+  .gate-input:focus { outline:none; border-color:var(--navy); }
+  .gate-hint { font-size:11px; color:var(--text2); margin-top:6px; text-align:center; }
+  .gate-error { font-size:12px; color:var(--red); margin-top:6px; text-align:center; display:none; }
+  .btn { width:100%; padding:13px; border:none; border-radius:12px; font-size:15px; font-weight:700; font-family:var(--font); cursor:pointer; }
+  .btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .btn-navy { background:linear-gradient(135deg,var(--navy),#1A5296); color:#fff; margin-top:14px; }
+  .btn-green { background:linear-gradient(135deg,var(--green),#2BBB75); color:#fff; margin-top:12px; }
+  .btn-stop { background:#F4F4FA; color:var(--text2); border:1px solid #E8E8F0; margin-top:8px; font-size:13px; display:none; }
+  .scan-header { background:linear-gradient(135deg,var(--dark),#2D2D4E); padding:22px 24px 16px; text-align:center; }
+  .scan-title { font-size:17px; font-weight:700; color:#fff; }
+  .scan-sub { font-size:11px; color:rgba(255,255,255,0.4); }
+  .scan-body { padding:18px; }
+  #qr-reader { width:100%; border-radius:14px; overflow:hidden; border:2px solid #E8E8F0; }
+  .scan-status { margin-top:12px; padding:13px 14px; border-radius:12px; font-size:13px; font-weight:600; text-align:center; }
+  .scan-status.ready { background:#F0F4FF; color:#4A6FA5; border:1px solid #D0DEFF; }
+  .scan-status.success { background:#E8F8F0; color:var(--green); border:1px solid #B8E8D0; }
+  .scan-status.error { background:#FFF0F0; color:var(--red); border:1px solid #FFD4D4; }
+  .scan-status.duplicate { background:#FFF8E8; color:#A08020; border:1px solid #F0DFA0; }
+  .scan-status.expired { background:#FFF0F0; color:var(--orange); border:1px solid #FFD4D4; }
+  .scanned { display:none; margin-top:12px; padding:14px; background:#E8F8F0; border:1.5px solid #B8E8D0; border-radius:14px; animation:slideUp 0.3s ease; }
+  .scanned.dup { background:#FFF8E8; border-color:#F0DFA0; }
+  @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  .scanned .s-name { font-size:15px; font-weight:700; color:var(--text); }
+  .scanned .s-detail { font-size:11.5px; color:var(--text2); }
+  .counter-bar { display:flex; align-items:center; justify-content:center; gap:14px; margin-top:16px; padding:14px; background:rgba(0,56,118,0.04); border-radius:12px; }
+  .c-item { text-align:center; } .c-num { font-size:26px; font-weight:700; color:var(--navy); line-height:1; }
+  .c-label { font-size:9px; color:var(--text2); font-weight:700; letter-spacing:0.6px; margin-top:2px; } .c-div { width:1px; height:36px; background:#E0E0E8; }
+  .log-section { margin-top:16px; } .log-title { font-size:11px; font-weight:700; color:var(--text2); margin-bottom:6px; }
+  .log-list { max-height:150px; overflow-y:auto; } .log-item { display:flex; justify-content:space-between; padding:7px 0; font-size:12px; border-bottom:1px solid #F4F4FA; }
+  .log-name { font-weight:600; } .log-time { color:var(--text2); } .log-empty { font-size:12px; color:#C0C0D0; text-align:center; padding:14px 0; }
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="main">
+  <div class="card" id="gate">
+    <div class="gate-header"><div class="gate-badge">🔒 STAFF ONLY</div><div class="gate-title">Internship Scanner</div><div class="gate-sub">Attendance + Student ID Card Pickup</div></div>
+    <div class="gate-body">
+      <input type="password" class="gate-input" id="gate-pw" placeholder="Password" maxlength="20" autocomplete="off">
+      <div class="gate-hint">Enter staff password</div><div class="gate-error" id="gate-error"></div>
+      <button class="btn btn-navy" id="btn-gate" onclick="handleGate()">Access Scanner</button>
+    </div>
+  </div>
+  <div class="card hidden" id="scanner">
+    <div class="scan-header"><div class="scan-title">📷 Internship Scanner</div><div class="scan-sub">1 scan = attendance + ID card pickup</div></div>
+    <div class="scan-body">
+      <div id="qr-reader"></div>
+      <button class="btn btn-green" id="btn-start" onclick="startScan()">Start Camera</button>
+      <button class="btn btn-stop" id="btn-stop" onclick="stopScan()">Stop Camera</button>
+      <div class="scan-status ready" id="scan-status">Loading...</div>
+      <div class="scanned" id="scanned"><div class="s-name" id="s-name">—</div><div class="s-detail" id="s-detail">—</div></div>
+      <div class="counter-bar">
+        <div class="c-item"><div class="c-num" id="c-in">0</div><div class="c-label">CHECKED IN</div></div><div class="c-div"></div>
+        <div class="c-item"><div class="c-num" id="c-total">0</div><div class="c-label">TOTAL</div></div><div class="c-div"></div>
+        <div class="c-item"><div class="c-num" id="c-pct">0%</div><div class="c-label">PROGRESS</div></div>
+      </div>
+      <div class="log-section"><div class="log-title">RECENT</div><div class="log-list" id="log-list"><div class="log-empty">No check-ins yet</div></div></div>
+    </div>
+  </div>
+</div>
+<script>
+const CONFIG = { API_URL: '', DEMO_MODE: true };
+const QR_VALID=35, SECRET='YISS2026-intern-checkin';
+let html5QrCode=null,scanning=false,logEntries=[],totalSt=0,checkedCount=0;
+function getAPI(){return CONFIG.API_URL;}
+
+async function handleGate(){
+  const pw=document.getElementById('gate-pw').value,err=document.getElementById('gate-error'),btn=document.getElementById('btn-gate');
+  err.style.display='none';btn.disabled=true;btn.textContent='Verifying...';
+  try{
+    if(CONFIG.DEMO_MODE){await new Promise(r=>setTimeout(r,500));if(pw==='yiss2026'){document.getElementById('gate').classList.add('hidden');document.getElementById('scanner').classList.remove('hidden');loadStats();}else{err.textContent='Incorrect password.';err.style.display='block';document.getElementById('gate-pw').value='';}}
+    else{const r=await fetch(`${getAPI()}?action=verify&pw=${encodeURIComponent(pw)}`);const d=await r.json();if(d.success){document.getElementById('gate').classList.add('hidden');document.getElementById('scanner').classList.remove('hidden');loadStats();}else{err.textContent='Incorrect password.';err.style.display='block';document.getElementById('gate-pw').value='';}}
+  }catch(e){err.textContent='Connection error.';err.style.display='block';}
+  btn.disabled=false;btn.textContent='Access Scanner';
+}
+document.getElementById('gate-pw').addEventListener('keydown',e=>{if(e.key==='Enter')handleGate();});
+
+async function loadStats(){
+  setStatus('ready','Loading...');
+  try{
+    if(CONFIG.DEMO_MODE){totalSt=3;checkedCount=0;}
+    else{const r=await fetch(`${getAPI()}?action=stats`);const d=await r.json();if(d.success){totalSt=d.total;checkedCount=d.checkedIn;}}
+    updateCounter();setStatus('ready',`✅ ${totalSt} interns — tap Start`);
+  }catch(e){setStatus('error','❌ Failed to load');}
+}
+
+async function startScan(){document.getElementById('btn-start').style.display='none';document.getElementById('btn-stop').style.display='block';html5QrCode=new Html5Qrcode('qr-reader');try{await html5QrCode.start({facingMode:'environment'},{fps:10,qrbox:{width:250,height:250}},onScan,()=>{});scanning=true;setStatus('ready','📷 Scanner active');}catch(e){setStatus('error','❌ Camera denied');document.getElementById('btn-start').style.display='block';document.getElementById('btn-stop').style.display='none';}}
+async function stopScan(){if(html5QrCode&&scanning){try{await html5QrCode.stop();}catch(e){}scanning=false;}document.getElementById('btn-start').style.display='block';document.getElementById('btn-stop').style.display='none';setStatus('ready','Stopped');}
+
+async function onScan(decoded){
+  const p=decoded.split('|');if(p.length!==4||p[0]!=='YISSINTERN'){setStatus('error','❌ Not an internship QR');return;}
+  const[,id,tsStr,sig]=p,now=Math.floor(Date.now()/1000);
+  if(simpleHash(`${id}|${tsStr}`+SECRET)!==sig){setStatus('error','❌ Bad signature');return;}
+  const age=now-parseInt(tsStr);if(age>QR_VALID){setStatus('expired',`⏰ Expired (${age}s) — refresh`);return;}
+  setStatus('ready','⏳ Recording...');
+  try{
+    if(CONFIG.DEMO_MODE){const card=document.getElementById('scanned');document.getElementById('s-name').textContent=id;document.getElementById('s-detail').textContent=id;card.className='scanned';card.style.display='block';setStatus('success',`✓ ${id} — checked in!`);checkedCount++;addLog(id);updateCounter();setTimeout(()=>{card.style.display='none';if(scanning)setStatus('ready','📷 Ready');},3000);return;}
+    const r=await fetch(`${getAPI()}?action=checkin&id=${encodeURIComponent(id)}`);const d=await r.json();
+    if(!d.success){setStatus('error','❌ '+d.error);return;}
+    const card=document.getElementById('scanned');
+    document.getElementById('s-name').textContent=d.name||id;document.getElementById('s-detail').textContent=`${id} · ${d.affiliation||''}`;
+    if(d.already_checked_in){card.className='scanned dup';setStatus('duplicate',`⚠ ${d.name} — already checked in`);}
+    else{card.className='scanned';setStatus('success',`✓ ${d.name} — checked in + ID recorded!`);checkedCount++;addLog(d.name);}
+    card.style.display='block';card.style.animation='none';card.offsetHeight;card.style.animation='slideUp 0.3s ease';updateCounter();
+    setTimeout(()=>{card.style.display='none';if(scanning)setStatus('ready','📷 Ready');},3000);
+  }catch(e){setStatus('error','❌ Network error');}
+}
+
+function setStatus(t,m){const e=document.getElementById('scan-status');e.className=`scan-status ${t}`;e.textContent=m;}
+function addLog(n){const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});logEntries.unshift({name:n,time:t});document.getElementById('log-list').innerHTML=logEntries.map(e=>`<div class="log-item"><span class="log-name">${e.name}</span><span class="log-time">${e.time}</span></div>`).join('');}
+function updateCounter(){document.getElementById('c-in').textContent=checkedCount;document.getElementById('c-total').textContent=totalSt;document.getElementById('c-pct').textContent=totalSt>0?Math.round((checkedCount/totalSt)*100)+'%':'0%';}
+function simpleHash(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h).toString(36).substring(0,8);}
+</script>
+</body>
+</html>

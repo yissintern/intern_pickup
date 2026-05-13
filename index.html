@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YISS 2026 — Internship Check-in</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --navy: #003876; --navy-deep: #002654; --gold: #C8A951;
+    --green: #22A065; --green-light: #E8F8F0;
+    --red: #D94040; --red-light: #FFF0F0;
+    --blue-light: #E8F0FF; --orange: #E8852E;
+    --card-bg: #fff; --text: #1A1A2E; --text2: #5A5A7A;
+    --font: 'DM Sans', 'Noto Sans KR', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font); min-height: 100vh; background: #EEF1F7; }
+
+  .top-bar {
+    background: linear-gradient(135deg, var(--navy), var(--navy-deep));
+    padding: 20px 24px; text-align: center; position: relative;
+  }
+  .top-bar::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--gold); }
+  .top-bar h1 { font-size: 19px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .top-bar p { font-size: 12px; color: rgba(200,169,81,0.8); font-weight: 500; }
+
+  .container { max-width: 440px; margin: 0 auto; padding: 24px 16px 40px; }
+  .card { background: var(--card-bg); border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08); overflow: hidden; }
+  .card-body { padding: 28px 24px; }
+
+  .form-group { margin-bottom: 18px; }
+  .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 7px; }
+  .form-input { width: 100%; padding: 13px 16px; border: 2px solid #E2E6F0; border-radius: 12px; font-size: 15px; font-family: var(--font); color: var(--text); background: #FAFAFF; transition: all 0.2s; }
+  .form-input:focus { outline: none; border-color: var(--navy); background: #fff; box-shadow: 0 0 0 4px rgba(0,56,118,0.07); }
+  .form-input::placeholder { color: #B0B4C8; }
+  .form-hint { font-size: 11px; color: var(--text2); margin-top: 5px; }
+
+  .btn-primary { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--navy), #1A5296); color: #fff; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: all 0.2s; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,56,118,0.25); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg { display: none; align-items: center; gap: 8px; background: var(--red-light); border: 1px solid #FFD4D4; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; color: var(--red); font-weight: 500; }
+
+  #result-section { display: none; }
+
+  .id-notice { background: var(--red-light); border: 1.5px solid #F5C0C0; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px; }
+  .id-notice-icon { font-size: 20px; flex-shrink: 0; }
+  .id-notice-text { font-size: 13px; color: #8B2020; font-weight: 600; line-height: 1.5; }
+  .id-notice-text span { display: block; font-size: 11.5px; font-weight: 500; color: #A04040; margin-top: 4px; }
+
+  .student-card { background: #F8F9FC; border-radius: 14px; padding: 18px; margin-bottom: 20px; }
+  .sc-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; }
+  .sc-row + .sc-row { border-top: 1px solid #EEEEF6; }
+  .sc-label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .sc-value { font-size: 14px; color: var(--text); font-weight: 600; }
+
+  .already-done { background: var(--green-light); border: 1.5px solid #B0E0C8; border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 20px; font-size: 13px; color: var(--green); font-weight: 600; }
+
+  .qr-section { text-align: center; margin-bottom: 16px; }
+  .qr-section h3 { font-size: 12px; color: var(--text2); font-weight: 600; margin-bottom: 10px; letter-spacing: 0.3px; }
+  .qr-wrap { display: inline-block; padding: 14px; background: #fff; border: 2px solid #E8E8F0; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+  .qr-wrap img { display: none !important; }
+  .qr-wrap canvas { display: block !important; }
+  .qr-timer { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 10px; font-size: 11px; color: var(--text2); font-weight: 500; }
+  .timer-bar { width: 100px; height: 3px; background: #E8E8F0; border-radius: 2px; overflow: hidden; }
+  .timer-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 1s linear; }
+
+  .qr-note { background: var(--blue-light); border: 1px solid #C8D8F0; border-radius: 10px; padding: 12px 14px; margin-top: 16px; font-size: 12px; color: #3A5A8A; font-weight: 500; line-height: 1.5; }
+  .btn-back { display: block; width: 100%; padding: 12px; margin-top: 12px; background: #F4F4FA; border: 1px solid #E8E8F0; border-radius: 12px; font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; font-family: var(--font); text-align: center; }
+
+  .hidden { display: none !important; }
+  .fade-in { animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>Internship Orientation Check-in</h1>
+  <p>YISS 2026 · Attendance & Student ID Card Pickup</p>
+</div>
+
+<div class="container">
+  <!-- LOGIN -->
+  <div class="card" id="login-section">
+    <div class="card-body">
+      <div class="error-msg" id="error-msg"><span>⚠</span> <span id="error-text"></span></div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="input-email" placeholder="Enter your summerapply email" autocomplete="email">
+        <p class="form-hint">The email you used for your YISS application</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date of Birth</label>
+        <input type="text" class="form-input" id="input-dob" placeholder="e.g. 20010315 (YYYYMMDD)" maxlength="8" inputmode="numeric">
+        <p class="form-hint">Enter 8 digits in YYYYMMDD format</p>
+      </div>
+      <button class="btn-primary" id="btn-lookup" onclick="handleLookup()">Check In</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-section" class="fade-in">
+    <div class="id-notice">
+      <div class="id-notice-icon">🪪</div>
+      <div class="id-notice-text">
+        Please bring a valid photo ID to pick up your student ID card.
+        <span>Accepted: passport, home institution student ID, or government-issued ID</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="already-done hidden" id="already-done">
+          ✅ Already checked in on <span id="done-time"></span>
+        </div>
+
+        <div class="student-card">
+          <div class="sc-row"><span class="sc-label">Name</span><span class="sc-value" id="r-name">—</span></div>
+          <div class="sc-row"><span class="sc-label">Student ID</span><span class="sc-value" id="r-id">—</span></div>
+          <div class="sc-row"><span class="sc-label">Home Institution</span><span class="sc-value" id="r-aff">—</span></div>
+        </div>
+
+        <div class="qr-section" id="qr-section">
+          <h3>CHECK-IN QR CODE — SHOW TO STAFF</h3>
+          <div class="qr-wrap" id="qr-container"></div>
+          <div class="qr-timer">
+            <span id="timer-text">Refreshes in 30s</span>
+            <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+          </div>
+        </div>
+
+        <div class="qr-note" id="qr-note">
+          📱 Show this QR to the staff. Your attendance and student ID card pickup will be recorded in one scan. The code refreshes every 30 seconds.
+        </div>
+
+        <button class="btn-back" onclick="goBack()">← Back</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  API_URL: '',
+  DEMO_MODE: true,
+  QR_REFRESH_SEC: 30,
+  SECRET: 'YISS2026-intern-checkin'
+};
+
+const DEMO_DB = {
+  'intern1@berkeley.edu|20010315': { student_id: '2026840101', name: 'Alice Park', affiliation: 'UC Berkeley' },
+  'intern2@northwestern.edu|20020728': { student_id: '2026840102', name: 'Ben Kim', affiliation: 'Northwestern University' },
+  'intern3@ntu.edu.sg|20000501': { student_id: '2026840103', name: 'Claire Zhang', affiliation: 'NTU Singapore' },
+};
+
+let timerInterval = null;
+
+async function handleLookup() {
+  const email = document.getElementById('input-email').value.trim();
+  const dob = document.getElementById('input-dob').value.trim();
+  const btn = document.getElementById('btn-lookup');
+  hideError();
+
+  if (!email) return showError('Please enter your email.');
+  if (!email.includes('@')) return showError('Please enter a valid email.');
+  if (!/^\d{8}$/.test(dob)) return showError('Date of Birth must be 8 digits (YYYYMMDD).');
+
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Looking up...';
+
+  try {
+    let result;
+    if (CONFIG.DEMO_MODE) {
+      await new Promise(r => setTimeout(r, 800));
+      const s = DEMO_DB[email.toLowerCase() + '|' + dob];
+      result = s ? { success: true, student: s } : { success: false, error: 'No matching record found.' };
+    } else {
+      const res = await fetch(`${CONFIG.API_URL}?action=lookup&email=${encodeURIComponent(email)}&dob=${encodeURIComponent(dob)}`);
+      result = await res.json();
+    }
+
+    if (result.success) showResult(result.student);
+    else showError(result.error);
+  } catch (e) { showError('Connection error.'); }
+
+  btn.disabled = false; btn.innerHTML = 'Check In';
+}
+
+function showResult(student) {
+  document.getElementById('login-section').classList.add('hidden');
+  const r = document.getElementById('result-section');
+  r.style.display = 'block'; r.classList.add('fade-in');
+
+  document.getElementById('r-name').textContent = student.name;
+  document.getElementById('r-id').textContent = student.student_id;
+  document.getElementById('r-aff').textContent = student.affiliation;
+
+  const doneEl = document.getElementById('already-done');
+  const qrSec = document.getElementById('qr-section');
+  const qrNote = document.getElementById('qr-note');
+
+  if (student.already_checked_in) {
+    doneEl.classList.remove('hidden');
+    document.getElementById('done-time').textContent = student.checked_in_at;
+    qrSec.style.display = 'none';
+    qrNote.style.display = 'none';
+  } else {
+    doneEl.classList.add('hidden');
+    qrSec.style.display = 'block';
+    qrNote.style.display = 'block';
+    generateQR(student.student_id);
+    startTimer(student.student_id);
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function generateQR(id) {
+  const c = document.getElementById('qr-container'); c.innerHTML = '';
+  const ts = Math.floor(Date.now() / 1000);
+  const sig = simpleHash(`${id}|${ts}` + CONFIG.SECRET);
+  new QRCode(c, { text: `YISSINTERN|${id}|${ts}|${sig}`, width: 180, height: 180, colorDark: '#1A1A2E', colorLight: '#FFFFFF', correctLevel: QRCode.CorrectLevel.M });
+}
+
+function startTimer(id) {
+  if (timerInterval) clearInterval(timerInterval);
+  let s = CONFIG.QR_REFRESH_SEC;
+  updateTimer(s);
+  timerInterval = setInterval(() => { s--; updateTimer(s); if (s <= 0) { generateQR(id); s = CONFIG.QR_REFRESH_SEC; } }, 1000);
+}
+
+function updateTimer(s) {
+  document.getElementById('timer-text').textContent = `Refreshes in ${s}s`;
+  const p = (s / CONFIG.QR_REFRESH_SEC) * 100;
+  const f = document.getElementById('timer-fill');
+  f.style.width = p + '%';
+  f.style.background = p < 20 ? '#D94040' : p < 40 ? '#E8852E' : '#22A065';
+}
+
+function goBack() {
+  if (timerInterval) clearInterval(timerInterval);
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('login-section').classList.remove('hidden');
+  document.getElementById('input-email').value = ''; document.getElementById('input-dob').value = '';
+  hideError(); window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showError(m) { document.getElementById('error-text').textContent = m; document.getElementById('error-msg').style.display = 'flex'; }
+function hideError() { document.getElementById('error-msg').style.display = 'none'; }
+function simpleHash(s) { let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; } return Math.abs(h).toString(36).substring(0, 8); }
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && !document.getElementById('login-section').classList.contains('hidden')) handleLookup(); });
+</script>
+</body>
+</html>

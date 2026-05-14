@@ -96,8 +96,8 @@
       </div>
       <div class="form-group">
         <label class="form-label">Date of Birth</label>
-        <input type="text" class="form-input" id="input-dob" placeholder="e.g. 20010315 (YYYYMMDD)" maxlength="8" inputmode="numeric">
-        <p class="form-hint">Enter 8 digits in YYYYMMDD format</p>
+        <input type="text" class="form-input" id="input-dob" placeholder="e.g. 010315 (YYMMDD)" maxlength="6" inputmode="numeric">
+        <p class="form-hint">Enter 6 digits in YYMMDD format</p>
       </div>
       <button class="btn-primary" id="btn-lookup" onclick="handleLookup()">Check In</button>
     </div>
@@ -112,7 +112,10 @@
         <span>Accepted: passport, home institution student ID, or government-issued ID</span>
       </div>
     </div>
-
+  <div style="background:#E8F0FF;border:1.5px solid #B0C8E8;border-radius:12px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:#2A4A7A;font-weight:500;">
+      📍 Seating is arranged by host organization — please check your seat.
+    </div>
+    
     <div class="card">
       <div class="card-body">
         <div class="already-done hidden" id="already-done">
@@ -168,7 +171,7 @@ async function handleLookup() {
 
   if (!email) return showError('Please enter your email.');
   if (!email.includes('@')) return showError('Please enter a valid email.');
-  if (!/^\d{8}$/.test(dob)) return showError('Date of Birth must be 8 digits (YYYYMMDD).');
+  if (!/^\d{6}$/.test(dob)) return showError('Date of Birth must be 6 digits (YYMMDD).');
 
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Looking up...';
 
